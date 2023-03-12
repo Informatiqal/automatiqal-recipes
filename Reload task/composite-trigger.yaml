@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://github.com/Informatiqal/automatiqal-cli-schema/blob/main/schemas/runbook_expanded.json?raw=true
+
+name: Reload task with daily trigger
+description: >
+  Create new reload task for a specific app. The task will be ran on a daily basis
+environment:
+  host: ${host}
+  port: 4242
+  edition: windows
+  authentication:
+    cert: ${certificate}
+    key: ${certificate_key}
+    user_dir: ${user_dir}
+    user_name: ${user_name}
+tasks:
+  - name: BASE reload task
+    operation: reloadTask.create
+    details:
+      name: BASE Reload Task
+      appFilter: ${base_app_composite_trigger_filter}
+  - name: New reload task
+    operation: reloadTask.create
+    details:
+      name: New Reload Task (Composite trigger)
+      appFilter: ${filter}
+  - name: Create composite trigger
+    operation: reloadTask.addTriggerComposite
+    source: New reload task
+    details:
+      name: Success trigger
+      eventTasks:
+        - state: success
+          name: BASE Reload Task

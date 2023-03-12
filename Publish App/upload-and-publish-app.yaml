@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://github.com/Informatiqal/automatiqal-cli-schema/blob/main/schemas/runbook_expanded.json?raw=true
+
+name: Publish app
+description: >
+  Import and publish an app workflow. The workflow includes creation of a
+  "release" tag. Once the app is published it will be tagged.
+environment:
+  host: ${host}
+  port: 4242
+  edition: windows
+  authentication:
+    cert: ${certificate}
+    key: ${certificate_key}
+    user_dir: ${user_dir}
+    user_name: ${user_name}
+tasks:
+  - name: Create release tag
+    operation: tag.create
+    details:
+      name: ${tag}
+  - name: Upload QVF
+    operation: app.upload
+    details:
+      file: ${qvfLocation}
+      name: My new app
+    onError:
+      tasks:
+        - name: Remove release tag 1
+          operation: tag.remove
+          source: Create release tag
+  - name: Get existing app
+    description: Get the existing app that will be replaced
+    operation: app.get
+    filter: ${filter}
+  - name: Publish imported app
+    description: Publish the imported app by replacing existing app
+    operation: app.switch
+    source: Upload QVF
+    details:
+      targetAppId: $${Get existing app}
+    onError:
+      tasks:
+        - name: Remove release tag 2
+          operation: tag.remove
+          source: Create release tag
+        - name: Remove imported app
+          operation: app.remove
+          source: Upload QVF
+  - name: Add release tag to the published app
+    operation: app.update
+    source: Upload QVF
+    details:
+      tags:
+        - ${tag}
