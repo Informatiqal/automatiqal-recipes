@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://github.com/Informatiqal/automatiqal-cli-schema/blob/main/schemas/runbook_expanded.json?raw=true
+
+name: Update entity
+description: >
+  Demonstrate how to add (append) custom properties to an entity (stream).
+  Specifying options -> customPropertyOperation = add will add (append) the
+  provided custom property value to the already existing values
+environment:
+  host: ${host}
+  port: 4242
+  edition: windows
+  authentication:
+    cert: ${certificate}
+    key: ${certificate_key}
+    user_dir: ${user_dir}
+    user_name: ${user_name}
+tasks:
+  - name: Update existing string
+    filter: name eq 'Test Stream'
+    operation: stream.update
+    details:
+      customProperties:
+        - StreamAccess=ADGroup2
+    options:
+      multiple: false
+      customPropertyOperations: add
