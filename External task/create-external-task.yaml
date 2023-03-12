@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://github.com/Informatiqal/automatiqal-cli-schema/blob/main/schemas/runbook_expanded.json?raw=true
+
+name: External task
+description: Create new external task that runs PowerShell script
+environment:
+  host: ${host}
+  port: 4242
+  edition: windows
+  authentication:
+    cert: ${certificate}
+    key: ${certificate_key}
+    user_dir: ${user_dir}
+    user_name: ${user_name}
+tasks:
+  - name: New external task
+    operation: externalTask.create
+    details:
+      name: My new external task
+      path: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+      parameters: C:\externalTasksExample\Script.ps1
