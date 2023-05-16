@@ -1,0 +1,54 @@
+# yaml-language-server: $schema=https://github.com/Informatiqal/automatiqal-cli-schema/blob/main/schemas/runbook_expanded.json?raw=true
+
+name: Upload and set reload
+description: Upload qvf and set the following reload tasks
+environment:
+  host: ${host}
+  port: 4242
+  edition: windows
+  authentication:
+    cert: ${certificate}
+    key: ${certificate_key}
+    user_dir: ${user_dir}
+    user_name: ${user_name}
+tasks:
+  - name: Upload app
+    operation: app.upload
+    details:
+      file: ${qvfLocation}
+      name: My uploaded app
+  - name: Create reload task
+    operation: reloadTask.create
+    details:
+      name: Reload "My uploaded app" to bring new data
+      appFilter: id eq $${Upload app#id}
+    onError:
+      tasks:
+        - name: Remove uploaded app
+          description: >
+            OPTIONAL
+            Remove the uploaded app if there is an issue 
+            when creating the reload task
+          operation: app.remove
+          source: Upload app
+  - name: Get published app
+    description: Get details about the app that will be replaced once the reload is complete
+    operation: app.get
+    filter: name eq 'My uploaded app(1)'
+  - name: Run Automatiqal runbook to publish an app
+    operation: externalTask.create
+    details:
+      name: Automatically publish app
+      path: automatiqal ./publish-app.yaml --inline appId=$${Upload app#id};targetAppId=$${Get published app#id}
+  - name: Trigger external task on reload success
+    operation: compositeTrigger.create
+    details:
+      name: Publish
+      task:
+        id: $${Run Automatiqal runbook to publish an app#id}
+      eventTasks:
+        - filter: id eq $${Create reload task#id}
+          state: success
+  - name: Start reload of "My uploaded app"
+    operation: task.start
+    filter: id eq $${Create reload task#id}
