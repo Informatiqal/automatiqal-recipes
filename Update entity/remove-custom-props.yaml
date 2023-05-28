@@ -23,4 +23,4 @@ tasks:
         - StreamAccess=ADGroup2
     options:
       multiple: false
-      customPropertyOperations: remove
+      customPropertyOperation: remove

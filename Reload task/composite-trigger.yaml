@@ -24,10 +24,11 @@ tasks:
       name: New Reload Task (Composite trigger)
       appFilter: ${filter}
   - name: Create composite trigger
-    operation: reloadTask.addTriggerComposite
-    source: New reload task
+    operation: compositeTrigger.create
     details:
       name: Success trigger
+      task:
+        id: $${New reload task#id}
       eventTasks:
         - state: success
-          name: BASE Reload Task
+          filter: id eq $${BASE Reload Task#id}
